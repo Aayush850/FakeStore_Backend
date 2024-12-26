@@ -6,11 +6,18 @@ const getAllProducts = async (req: Request, res: Response) => {
   const { page = 1 } = req.query;
   const offset = (+page - 1) * limit;
   try {
-    const allProducts = await pool.query(
+    const products = await pool.query(
       "SELECT * FROM product LIMIT $1 OFFSET $2",
       [limit, offset]
     );
-    res.status(200).json(allProducts.rows);
+    const totalProducts = await pool.query("SELECT COUNT(*) FROM product");
+    const total = totalProducts.rows[0].count;
+    const numOfPages = Math.ceil(+total / limit);
+    res.status(200).json({
+      products: products.rows,
+      totalProducts: total,
+      numOfPages,
+    });
   } catch (error) {
     res.status(500).json({ msg: "An Error Occured" });
   }

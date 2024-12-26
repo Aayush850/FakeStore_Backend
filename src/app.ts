@@ -1,27 +1,18 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
-import dotenv from "dotenv"
-import { Request,Response } from "express";
-
-dotenv.config()
-import { pool } from "./db.js/db";
-
+import { Request, Response } from "express";
+import productRouter from "./routes/productRoutes";
 
 const app = express();
 
+app.use(express.json());
 //getAllProducts
-app.get("/",(req,res)=>{
-    res.send("HELLO FROM THE SERVER")
-})
+app.use("/api/v1/products", productRouter);
+//Route Not Found
+app.use("*", (req: Request, res: Response) => {
+  res.status(404).json({ msg: "Route doesn't exist" });
+});
 
-app.get("/products", async (req:Request,res:Response)=>{
-    try {
-        const allProducts = await pool.query("SELECT * FROM product" );
-        res.status(200).json(allProducts.rows);
-    } catch (error) {
-        res.status(500).json({msg:"An Error Occured"})        
-    }
-})
-
-
-const port = process.env.PORT
-app.listen(port,()=>console.log(`server is running on port ${port}`));
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`server is running on port ${port}`));
